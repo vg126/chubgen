@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Creator - Chub.AI Stage</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="stage-container">
+        <div class="stage-header">
+            <h2>Character Creator</h2>
+            <p class="stage-subtitle">Create AI characters directly in chat</p>
+        </div>
+
+        <div id="status-messages"></div>
+
+        <form id="character-form" class="character-form">
+            <div class="form-group">
+                <label for="name" class="form-label">Character Name *</label>
+                <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    class="form-control" 
+                    placeholder="Enter character name"
+                    required
+                />
+                <div class="error-message" id="name-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="tagline" class="form-label">Tagline</label>
+                <input 
+                    type="text" 
+                    id="tagline" 
+                    name="tagline" 
+                    class="form-control" 
+                    placeholder="Brief description of your character"
+                />
+                <div class="error-message" id="tagline-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="avatar-url" class="form-label">Avatar URL</label>
+                <input 
+                    type="url" 
+                    id="avatar-url" 
+                    name="avatarUrl" 
+                    class="form-control" 
+                    placeholder="https://example.com/avatar.jpg"
+                />
+                <div class="error-message" id="avatar-url-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="avatar-file" class="form-label">Or Upload Avatar</label>
+                <input 
+                    type="file" 
+                    id="avatar-file" 
+                    name="avatarFile" 
+                    class="form-control" 
+                    accept="image/*"
+                />
+                <div class="error-message" id="avatar-file-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="tags" class="form-label">Tags (comma-separated, max 10)</label>
+                <input 
+                    type="text" 
+                    id="tags" 
+                    name="tags" 
+                    class="form-control" 
+                    placeholder="fantasy, wizard, helpful, magic"
+                />
+                <div class="error-message" id="tags-error"></div>
+                <div class="form-help">Enter tags separated by commas</div>
+            </div>
+
+            <div class="form-group">
+                <label for="definition" class="form-label">Character Definition *</label>
+                <textarea 
+                    id="definition" 
+                    name="definition" 
+                    class="form-control character-definition" 
+                    placeholder="Describe your character's personality, background, and behavior..."
+                    rows="6"
+                    required
+                ></textarea>
+                <div class="error-message" id="definition-error"></div>
+                <div class="form-help">
+                    Provide a detailed description of your character's personality, background, and how they should behave
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn--primary btn--full-width" id="create-button">
+                    <span class="button-text">Create Character</span>
+                    <span class="loading-spinner hidden">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                        </svg>
+                    </span>
+                </button>
+            </div>
+        </form>
+
+        <div class="auth-status">
+            <div class="status status--info" id="auth-indicator">
+                <span>✓ Authenticated with Chub.AI</span>
+            </div>
+        </div>
+
+        <div class="stage-info">
+            <p class="info-text">This Stage integrates with Chub.AI's character creation API to generate characters directly within chat conversations.</p>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Character Created Successfully!</h3>
+            </div>
+            <div class="modal-body">
+                <p>Your character has been created and is ready to chat.</p>
+                <div class="character-link">
+                    <a href="#" id="character-link" class="btn btn--primary" target="_blank">
+                        Chat with your character
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn--secondary" onclick="closeSuccessModal()">Create Another</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
