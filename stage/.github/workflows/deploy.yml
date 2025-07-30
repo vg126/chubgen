@@ -1,0 +1,28 @@
+name: Deploy Stage
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+      - run: yarn install
+      - run: yarn build
+      - name: Zip build
+        run: cd dist && zip -r ../build.zip * && cd ..
+      - name: Upload
+        env:
+          CHUB_AUTH_TOKEN: ${{ secrets.CHUB_AUTH_TOKEN }}
+          STAGE_ID: ${{ secrets.STAGE_ID }}
+        run: |
+          curl -H "CH-API-KEY: ${{ secrets.CHUB_AUTH_TOKEN }}" -F "file=@build.zip" https://api.chub.ai/extension/${{ env.STAGE_ID }}/upload

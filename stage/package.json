@@ -1,0 +1,28 @@
+{
+  "name": "chub-character-stage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build --mode lib",
+    "lint": "eslint . --ext ts,tsx --max-warnings 0"
+  },
+  "dependencies": {
+    "@chub-ai/stages-ts": "^0.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react": "^4.2.1",
+    "sass-embedded": "^1.89.2",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vite-plugin-dts": "^3.9.1"
+  },
+  "engines": {
+    "node": "^18 || ^20 || ^21"
+  }
+}
