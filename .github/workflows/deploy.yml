@@ -7,6 +7,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./character-stage
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -16,16 +19,13 @@ jobs:
         with:
           node-version: '21.7.1'
           cache: 'yarn'
+          cache-dependency-path: 'character-stage/yarn.lock'
           
       - name: Install dependencies
-        run: |
-          cd character-stage
-          yarn install
+        run: yarn install
           
       - name: Build project
-        run: |
-          cd character-stage
-          yarn build
+        run: yarn build
           
       - name: Deploy to Chub.AI
         env:
