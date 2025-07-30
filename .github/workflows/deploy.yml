@@ -26,11 +26,20 @@ jobs:
           
       - name: Build project
         run: yarn build
-          
-      - name: Deploy to Chub.AI
-        env:
-          CHUB_AUTH_TOKEN: ${{ secrets.CHUB_AUTH_TOKEN }}
+
+      - name: Copy built assets into character-stage
+        # After building with Vite the output is in the `dist` directory.
+        # Copy the compiled files into the root of the `character-stage` folder so that
+        # GitHub Pages serves the compiled HTML and assets instead of the source code.
         run: |
-          echo "Deploying Stage to Chub.AI"
-          echo "Auth token length: ${#CHUB_AUTH_TOKEN}"
-          # TODO: Implement actual deployment API call
+          cp -R dist/* .
+
+      - name: Commit and push built site
+        # Commit the updated built assets back to the repository. This makes the
+        # compiled site available to GitHub Pages on the `main` branch.
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Deploy built character stage to GitHub Pages" || echo "No changes to commit"
+          git push
