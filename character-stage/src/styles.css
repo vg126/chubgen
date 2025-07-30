@@ -32,6 +32,10 @@
   --color-red-400-rgb: 255, 84, 89;
   --color-orange-500-rgb: 168, 75, 47;
   --color-orange-400-rgb: 230, 129, 97;
+  --color-green-400: rgba(56, 178, 172, 1);
+  --color-green-500: rgba(22, 163, 74, 1);
+  --color-green-400-rgb: 56, 178, 172;
+  --color-green-500-rgb: 22, 163, 74;
 
   /* Semantic Color Tokens (Light Mode) */
   --color-background: var(--color-cream-50);
@@ -48,10 +52,10 @@
   --color-btn-primary-text: var(--color-cream-50);
   --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
   --color-card-border-inner: rgba(var(--color-brown-600-rgb), 0.12);
+  --color-success: var(--color-green-500);
+  --color-success-rgb: var(--color-green-500-rgb);
   --color-error: var(--color-red-500);
-  --color-success: var(--color-teal-500);
-  --color-warning: var(--color-orange-500);
-  --color-info: var(--color-slate-500);
+  --color-error-rgb: var(--color-red-500-rgb);
   --color-focus-ring: rgba(var(--color-teal-500-rgb), 0.4);
 
   /* RGB versions for status colors */
@@ -356,6 +360,33 @@ textarea.form-control {
 
 .status-message a:hover {
   text-decoration: none;
+}
+
+/* Alert styles (aliases for status messages) */
+.alert {
+  padding: var(--space-12);
+  border-radius: var(--radius-base);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-16);
+  border: 1px solid;
+}
+
+.alert-success {
+  background-color: rgba(var(--color-success-rgb), 0.1);
+  border-color: rgba(var(--color-success-rgb), 0.2);
+  color: var(--color-success);
+}
+
+.alert-error {
+  background-color: rgba(var(--color-error-rgb), 0.1);
+  border-color: rgba(var(--color-error-rgb), 0.2);
+  color: var(--color-error);
+}
+
+.form-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-4);
 }
 
 /* Responsive design */
