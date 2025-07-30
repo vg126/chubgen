@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './styles.css';
 
 // Minimal Chub.AI Stage interfaces (extracted from @chub-ai/stages-ts)
@@ -113,6 +113,7 @@ type ChatStateType = {
 export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateType, ConfigType> {
   private characterLibrary: CharacterData[] = [];
   private activeCharacter: CharacterData | null = null;
+  private updateCallback: (() => void) | null = null;
 
   constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
     super(data);
@@ -195,10 +196,16 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
   private addCharacterToLibrary = (character: CharacterData) => {
     this.characterLibrary = [...this.characterLibrary, character];
+    this.updateCallback?.(); // Trigger re-render
   };
 
   private setActiveCharacter = (character: CharacterData | null) => {
     this.activeCharacter = character;
+    this.updateCallback?.(); // Trigger re-render
+  };
+
+  setUpdateCallback = (callback: () => void) => {
+    this.updateCallback = callback;
   };
 
   private exportCharacter = (character: CharacterData) => {
@@ -219,6 +226,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
   render() {
     return (
       <CharacterCreatorStage
+        stage={this}
         characterLibrary={this.characterLibrary}
         activeCharacter={this.activeCharacter}
         onAddCharacter={this.addCharacterToLibrary}
@@ -231,6 +239,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
 
 // React component for the Stage UI
 interface CharacterCreatorStageProps {
+  stage: Stage;
   characterLibrary: CharacterData[];
   activeCharacter: CharacterData | null;
   onAddCharacter: (character: CharacterData) => void;
@@ -239,6 +248,7 @@ interface CharacterCreatorStageProps {
 }
 
 function CharacterCreatorStage({
+  stage,
   characterLibrary,
   activeCharacter,
   onAddCharacter,
@@ -258,6 +268,14 @@ function CharacterCreatorStage({
   const [showLibrary, setShowLibrary] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [, forceUpdate] = useState({});
+
+  // Connect to Stage class for updates
+  useEffect(() => {
+    const updateFn = () => forceUpdate({});
+    stage.setUpdateCallback(updateFn);
+    return () => stage.setUpdateCallback(() => {});
+  }, [stage]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
