@@ -1,17 +1,3 @@
-# chatgpt.com - July30
-**URL**: https://chatgpt.com/s/dr_688a53ee80148191881c89e8f4399e9c
-**Downloaded**: July 30, 2025 at 22:48
-**Domain**: chatgpt.com
-
----
-
-Title: Shared Content
-
-URL Source: https://chatgpt.com/s/dr_688a53ee80148191881c89e8f4399e9c
-
-Published Time: 2025-07-30T17:18:38.500Z
-
-Markdown Content:
 Architecture Overview
 ---------------------
 
