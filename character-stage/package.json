@@ -2,9 +2,10 @@
   "name": "chub-character-creator-stage",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --base=/chubgen/character-stage/"
+    "build": "tsc && vite build --mode lib"
   },
   "dependencies": {
     "@chub-ai/stages-ts": "^0.5.1-alpha",

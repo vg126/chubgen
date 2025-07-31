@@ -1,15 +1,24 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
-// Vite configuration for building the character-stage as a static site.
-// The `base` option ensures that all asset URLs are prefixed with the
-// repository path when served via GitHub Pages (e.g. https://vg126.github.io/chubgen/character-stage/).
-export default defineConfig({
-  plugins: [react()],
-  // When deploying to GitHub Pages we need to set the base path so that
-  // links to JavaScript and CSS assets are resolved correctly.
-  base: '/chubgen/character-stage/',
-  build: {
-    outDir: 'dist'
+export default defineConfig(({ command, mode }) => {
+  if (mode !== 'lib') {
+    return { plugins: [react()] };
   }
+  return {
+    plugins: [react()],
+    build: {
+      lib: {
+        entry: resolve(__dirname, 'src/index.ts'),
+        name: 'index',
+        formats: ['umd', 'es', 'cjs', 'iife'],
+        fileName: 'index'
+      },
+      rollupOptions: {
+        external: ['react', 'react-dom'],
+        output: { globals: { react: 'React', 'react-dom': 'ReactDOM' } }
+      }
+    }
+  };
 });
