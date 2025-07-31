@@ -1,48 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './styles.css';
-
-// Minimal Chub.AI Stage interfaces (extracted from @chub-ai/stages-ts)
-interface Message {
-  content: string;
-  anonymizedId: string; 
-  isBot: boolean;
-}
-
-interface InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType> {
-  characters: { [key: string]: any };
-  users: { [key: string]: any };
-  config: ConfigType;
-  messageState: MessageStateType | null;
-  environment: string;
-  initState: InitStateType | null;
-  chatState: ChatStateType | null;
-}
-
-interface LoadResponse<InitStateType, ChatStateType, MessageStateType> {
-  success: boolean;
-  error: string | null;
-  initState: InitStateType | null;
-  chatState: ChatStateType | null;
-}
-
-interface StageResponse<ChatStateType, MessageStateType> {
-  stageDirections: string | null;
-  messageState: MessageStateType | null;
-  modifiedMessage: string | null;
-  systemMessage: string | null;
-  error: string | null;
-  chatState: ChatStateType | null;
-}
-
-abstract class StageBase<InitStateType, ChatStateType, MessageStateType, ConfigType> {
-  constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {}
-  
-  abstract load(): Promise<Partial<LoadResponse<InitStateType, ChatStateType, MessageStateType>>>;
-  abstract setState(state: MessageStateType): Promise<void>;
-  abstract beforePrompt(userMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>>;
-  abstract afterResponse(botMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>>;
-  abstract render(): React.ReactElement;
-}
+import { StageBase, StageResponse, InitialData, Message } from "@chub-ai/stages-ts";
+import { LoadResponse } from "@chub-ai/stages-ts/dist/types/load";
 
 interface CharacterData {
   name: string;
@@ -157,7 +116,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
       return {
         stageDirections,
         messageState: {
-          activeCharacter: this.activeCharacter,
+          activeCharacter: this.activeCharacter ?? undefined,
           characterLibrary: this.characterLibrary
         },
         modifiedMessage: null,
@@ -170,7 +129,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     return {
       stageDirections: null,
       messageState: {
-        activeCharacter: this.activeCharacter,
+        activeCharacter: this.activeCharacter ?? undefined,
         characterLibrary: this.characterLibrary
       },
       modifiedMessage: null,
@@ -184,7 +143,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     return {
       stageDirections: null,
       messageState: {
-        activeCharacter: this.activeCharacter,
+        activeCharacter: this.activeCharacter ?? undefined,
         characterLibrary: this.characterLibrary
       },
       modifiedMessage: null,

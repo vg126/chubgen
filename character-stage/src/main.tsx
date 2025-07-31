@@ -1,9 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Stage } from './Stage';
+import type { InitialData } from "@chub-ai/stages-ts";
 
 // Create a mock InitialData for local testing
-const mockInitialData = {
+const mockInitialData: InitialData<any, any, any, any> = {
   characters: {},
   users: {},
   config: {},
@@ -11,6 +12,9 @@ const mockInitialData = {
   environment: 'development',
   initState: null,
   chatState: null,
+  token: "",
+  id: 0,
+  userId: ""
 };
 
 // Instantiate the Stage class for local testing
