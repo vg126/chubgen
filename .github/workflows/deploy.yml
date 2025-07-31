@@ -6,6 +6,7 @@ on:
 
 jobs:
   deploy:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -15,33 +16,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '21.7.1'
           cache: 'yarn'
           cache-dependency-path: 'character-stage/yarn.lock'
-          
+
       - name: Install dependencies
-        run: yarn install
-          
+        run: yarn install --frozen-lockfile
+
       - name: Build project
         run: yarn build
 
-      - name: Copy built assets into character-stage
-        # After building with Vite the output is in the `dist` directory.
-        # Copy the compiled files into the root of the `character-stage` folder so that
-        # GitHub Pages serves the compiled HTML and assets instead of the source code.
-        run: |
-          cp -R dist/* .
+      - name: Zip dist folder
+        run: cd dist && zip -r ../build.zip . && cd ..
 
-      - name: Commit and push built site
-        # Commit the updated built assets back to the repository. This makes the
-        # compiled site available to GitHub Pages on the `main` branch.
+      - name: Upload to Chub
+        env:
+          CHUB_AUTH_TOKEN: ${{ secrets.CHUB_AUTH_TOKEN }}
+          STAGE_ID: ${{ secrets.STAGE_ID }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "Deploy built character stage to GitHub Pages" || echo "No changes to commit"
-          git push
+          curl -H "CH-API-KEY: $CHUB_AUTH_TOKEN" -F "file=@build.zip" https://api.chub.ai/extension/${STAGE_ID}/upload
