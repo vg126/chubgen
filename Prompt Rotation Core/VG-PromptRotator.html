@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Prompt Rotator & Variable Analysis System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        'bg-light': '#FFFFFF',
+                        'bg-dark': '#181818',
+                        'tag-bold': '#8B5CF6'
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+    </script>
+</head>
+<body class="bg-bg-light dark:bg-bg-dark text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-200">
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                AI Prompt Rotator & Variable Analysis System
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400">
+                Systematic prompt variation and intelligent variable analysis
+            </p>
+        </div>
+
+        <!-- Main Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            
+            <!-- Left Panel: Prompt Rotation & Controls -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                <h2 class="text-xl font-semibold mb-4">Prompt Rotation & Analysis</h2>
+                
+                <!-- Original Prompt Input -->
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-sm font-semibold">Original Prompt:</label>
+                        <div class="flex gap-2">
+                            <button 
+                                id="copyOriginalPrompt" 
+                                class="px-3 py-1 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors"
+                                title="Copy original prompt"
+                            >
+                                📋
+                            </button>
+                            <button 
+                                id="clearPrompt" 
+                                class="px-3 py-1 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition-colors"
+                            >
+                                🗑️ Clear
+                            </button>
+                            <button 
+                                id="importStateBtn" 
+                                class="px-3 py-1 bg-cyan-600 text-white text-xs rounded-lg hover:bg-cyan-700 transition-colors"
+                            >
+                                📥 Import State
+                            </button>
+                        </div>
+                    </div>
+                    <textarea 
+                        id="originalPrompt" 
+                        class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-base resize-none"
+                        rows="4"
+                        placeholder="Enter your prompt here... (e.g., 'A magical forest with glowing mushrooms at sunset')"
+                    ></textarea>
+                </div>
+
+                <!-- Variable Creation Rules -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2">Variable Creation Rules (Optional):</label>
+                    <textarea 
+                        id="variableRules" 
+                        class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-base resize-none"
+                        rows="2"
+                        placeholder="e.g., 'Keep all variations within South Asian context' or 'Focus on modern urban settings only'"
+                    ></textarea>
+                </div>
+
+                <!-- Analysis Controls -->
+                <div class="mb-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <label class="text-sm font-medium">Museum Guide AI:</label>
+                        <select id="analysisModel" class="flex-1 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-sm">
+                            <option value="Claude-Haiku-3" selected>Claude-Haiku-3</option>
+                            <option value="Gemini-2.0-Flash">Gemini-2.0-Flash</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex gap-2 flex-wrap">
+                        <button 
+                            id="analyzeBtn" 
+                            class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                        >
+                            🔍 Analyze Variables
+                        </button>
+                        <button 
+                            id="feedBtn2" 
+                            class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                            title="Feed original prompt to current prompt"
+                        >
+                            ⬇️ Feed
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="analysisLoading" class="hidden mb-4">
+                    <div class="flex items-center text-blue-600">
+                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                        <span id="analysisStatus">Analyzing prompt...</span>
+                    </div>
+                </div>
+
+                <!-- Variable Controls Container -->
+                <div id="variableControls" class="hidden">
+                    <h3 class="text-lg font-medium mb-3">Rotation Variables:</h3>
+                    <div id="variableList" class="space-y-3 mb-4 max-h-96 overflow-y-auto">
+                        <!-- Variables will be populated here -->
+                    </div>
+                    
+                    <!-- Navigation Controls -->
+                    <div class="flex gap-3 items-center">
+                        <button id="prevCombo" class="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm">← Prev</button>
+                        <span id="comboCounter" class="px-3 py-1 text-center bg-gray-100 dark:bg-gray-700 rounded-lg text-sm font-medium">1 / 1</span>
+                        <button id="nextCombo" class="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm">Next →</button>
+                    </div>
+                    
+                    <!-- Add More Variables Button (only visible when variables exist) -->
+                    <div class="mb-4">
+                        <button 
+                            id="addMoreVariablesBtn" 
+                            class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+                        >
+                            ➕ Add More Variables
+                        </button>
+                    </div>
+
+                    <!-- Copy Rotated Prompt Button -->
+                    <div class="mt-4">
+                        <button 
+                            id="copyRotatedPrompt" 
+                            class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                            📋 Copy Current Prompt
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Museum TV Terminal -->
+            <div class="bg-black text-green-400 rounded-2xl shadow-xl p-6 font-mono relative border-2 border-green-500">
+                <!-- Terminal Header -->
+                <div class="flex items-center justify-between mb-4 border-b border-green-500 pb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <h2 class="text-green-400 text-lg font-bold ml-4">🏛️ MUSEUM TERMINAL v2.1</h2>
+                    </div>
+                    <div class="text-xs text-green-300">STATUS: ONLINE</div>
+                </div>
+
+                <!-- Terminal Screen -->
+                <div id="museumTerminal" class="bg-black border border-green-500 rounded-lg p-4 h-96 overflow-y-auto text-sm">
+                    <div class="text-green-300 mb-4">
+                        <div class="animate-pulse">█ WELCOME TO THE AI PROMPT ANALYSIS MUSEUM █</div>
+                        <div class="text-xs mt-2 text-green-600">Interactive demonstration of systematic prompt engineering...</div>
+                        <div class="text-xs text-green-600">Every operation will be explained in real-time by your AI museum guide.</div>
+                        <div class="mt-4 text-green-400">Ready for demonstration. Please interact with the controls on the left.</div>
+                    </div>
+                </div>
+
+                <!-- Terminal Controls -->
+                <div class="mt-4 grid grid-cols-2 gap-2">
+                    <button id="clearTerminal" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-green-400 border border-green-500 rounded text-sm transition-colors">
+                        🧹 Clear Terminal
+                    </button>
+                    <button id="museumIntro" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-green-400 border border-green-500 rounded text-sm transition-colors">
+                        ℹ️ Museum Intro
+                    </button>
+                </div>
+
+                <!-- State Management Buttons -->
+                <div class="grid grid-cols-2 gap-2 mt-2">
+                    <button id="saveState" class="inline-flex items-center justify-center px-4 py-2 bg-purple-900 hover:bg-purple-800 text-green-400 border border-green-500 rounded transition-colors duration-200 text-sm">
+                        💾 Save State
+                    </button>
+                    <button id="copyEntireFlow" class="inline-flex items-center justify-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-green-400 border border-green-500 rounded transition-colors duration-200 text-sm">
+                        📋 Copy Flow
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // Global state - image generation variables removed
+        let currentVariables = [];
+        let currentCombination = 0;
+        let totalCombinations = 0;
+        let originalPrompt = '';
+        let autoSaveEnabled = true;
+        let lastAutoSave = null;
+
+        // Initialize DOM elements after DOM is ready
+        let elements = {};
+        
+        function initializeElements() {
+            console.log('🔧 Initializing DOM elements...');
+            
+            elements = {
+                originalPrompt: document.getElementById('originalPrompt'),
+                analysisModel: document.getElementById('analysisModel'),
+                analyzeBtn: document.getElementById('analyzeBtn'),
+                analysisLoading: document.getElementById('analysisLoading'),
+                analysisStatus: document.getElementById('analysisStatus'),
+                variableControls: document.getElementById('variableControls'),
+                variableList: document.getElementById('variableList'),
+                prevCombo: document.getElementById('prevCombo'),
+                nextCombo: document.getElementById('nextCombo'),
+                comboCounter: document.getElementById('comboCounter'),
+                copyRotatedPrompt: document.getElementById('copyRotatedPrompt'),
+                clearPrompt: document.getElementById('clearPrompt'),
+                copyEntireFlow: document.getElementById('copyEntireFlow'),
+                museumTerminal: document.getElementById('museumTerminal')
+            };
+            
+            // Check for critical elements
+            const criticalElements = ['originalPrompt', 'analyzeBtn', 'museumTerminal'];
+            let allCriticalFound = true;
+            
+            criticalElements.forEach(elementName => {
+                if (!elements[elementName]) {
+                    console.error(`❌ Critical element missing: ${elementName}`);
+                    allCriticalFound = false;
+                }
+            });
+            
+            return allCriticalFound;
+        }
+
+        // Museum Terminal Functions
+        function addToTerminal(content, type = 'normal') {
+            const terminal = elements.museumTerminal;
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const colors = {
+                'normal': 'text-green-400',
+                'system': 'text-green-300',
+                'action': 'text-yellow-400',
+                'analysis': 'text-cyan-400',
+                'warning': 'text-orange-400',
+                'success': 'text-green-500'
+            };
+            
+            const newLine = document.createElement('div');
+            newLine.className = `${colors[type]} mb-2`;
+            newLine.innerHTML = `<span class="text-green-600 text-xs">[${timestamp}]</span> ${content}`;
+            
+            terminal.appendChild(newLine);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function clearTerminal() {
+            elements.museumTerminal.innerHTML = `
+                <div class="text-green-300 mb-4">
+                    <div class="animate-pulse">█ TERMINAL CLEARED █</div>
+                    <div class="text-xs mt-2 text-green-600">Ready for new demonstration...</div>
+                </div>
+            `;
+        }
+
+        function showMuseumIntro() {
+            clearTerminal();
+            addToTerminal('🏛️ Welcome to the AI Prompt Engineering Museum!', 'system');
+            addToTerminal('This interactive exhibit demonstrates systematic prompt analysis and variable generation.', 'normal');
+            addToTerminal('Originally part of "ImgRock" - a revolutionary image generation tool.', 'normal');
+            addToTerminal('Now serving as a pedagogical demonstration of advanced prompt engineering techniques.', 'normal');
+            addToTerminal('Every action you take will be explained by your AI museum guide.', 'success');
+        }
+
+        // Poe API handlers
+        window.Poe.registerHandler("analysis-handler", handleAnalysisResponse);
+
+        // Custom alert function (no alert() allowed)
+        function showAlert(message) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">${message}</p>
+                    <div class="flex justify-end">
+                        <button class="px-4 py-2 bg-primary text-white hover:bg-purple-600 rounded" onclick="this.closest('.fixed').remove()">OK</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Prompt rotation functions
+        async function analyzePrompt() {
+            const prompt = elements.originalPrompt.value.trim();
+            if (!prompt) {
+                showAlert('Please enter a prompt to analyze.');
+                return;
+            }
+
+            originalPrompt = prompt;
+            showAnalysisLoading(true, 'Analyzing prompt variables...');
+
+            // Get variable creation rules
+            const rules = document.getElementById('variableRules').value.trim();
+            const rulesInstruction = rules ? `\n\nIMPORTANT RULES: ${rules}` : '';
+
+            const analysisPrompt = `
+Analyze this prompt and identify key variables that could be rotated for systematic research: "${prompt}"${rulesInstruction}
+
+Your task:
+1. Identify 6-7 of the most important nouns, adjectives, locations, or concepts that could be varied
+2. For each variable, generate exactly 5 diverse, relevant alternatives (keep it lean for cost optimization)
+3. Use the EXACT text from the original prompt as current_value for each variable
+4. Follow any provided rules strictly when generating alternatives
+
+CRITICAL: Output ONLY pure JSON with NO additional text, explanations, footnotes, citations, or markdown formatting.
+
+{
+  "variables": [
+    {
+      "name": "variable_name",
+      "current_value": "exact_text_from_original_prompt", 
+      "options": ["option1", "option2", "option3", "option4", "option5"]
+    }
+  ]
+}
+
+Limit to 6-7 variables maximum. Each variable should have exactly 5 options for cost efficiency. NO additional text or formatting.`;
+
+            try {
+                const selectedModel = elements.analysisModel.value;
+                await window.Poe.sendUserMessage(`@${selectedModel} ${analysisPrompt}`, {
+                    handler: "analysis-handler",
+                    stream: false,
+                    openChat: false,
+                    handlerContext: { type: 'analyze' }
+                });
+            } catch (error) {
+                showAnalysisLoading(false);
+                showAlert('Error sending analysis request: ' + error.message);
+            }
+        }
+
+        function handleAnalysisResponse(result, context) {
+            if (result.status === "error") {
+                showAnalysisLoading(false);
+                showAlert("Analysis error: " + (result.responses[0].statusText || 'Unknown error'));
+                return;
+            }
+            
+            if (result.status !== "complete") return;
+
+            const response = result.responses[0].content;
+
+            if (context?.type === 'analyze') {
+                // Handle variable analysis - generate variables only
+                try {
+                    // Extract JSON from response
+                    const jsonMatch = response.match(/\{[\s\S]*\}/);
+                    if (!jsonMatch) {
+                        throw new Error('No JSON found in response');
+                    }
+                    
+                    const data = JSON.parse(jsonMatch[0]);
+                    
+                    if (!data.variables || !Array.isArray(data.variables)) {
+                        throw new Error('Invalid variables structure');
+                    }
+
+                    // Cap variables to 7 maximum
+                    currentVariables = data.variables.slice(0, 7);
+                    
+                    setupVariableControls();
+                    calculateCombinations();
+                    updateGeneratedPrompt();
+                    showAnalysisLoading(false);
+                    
+                } catch (error) {
+                    showAnalysisLoading(false);
+                    showAlert('Error parsing analysis results: ' + error.message);
+                }
+                return;
+            }
+
+            // Handle other response types like format, hifi, etc.
+            if (context?.type === 'format') {
+                const formattedText = response.trim();
+                elements.promptInput.value = formattedText;
+                setFormatLoadingState(false);
+                showAlert('Prompt formatted successfully!');
+                return;
+            }
+
+            if (context?.type === 'hifi') {
+                const enhancedText = response.trim();
+                elements.promptInput.value = enhancedText;
+                setHiFiLoadingState(false);
+                showAlert('Prompt enhanced with Hi-Fi details!');
+                return;
+            }
+
+            if (context?.type === 'expand') {
+                // Handle AI Expand response - flexible plain text parsing like original ImgRock
+                try {
+                    let newOptions = [];
+                    
+                    // Try JSON first
+                    const jsonMatch = response.match(/\[[\s\S]*?\]/);
+                    if (jsonMatch) {
+                        try {
+                            newOptions = JSON.parse(jsonMatch[0]);
+                        } catch (e) {
+                            // JSON failed, fall back to plain text
+                        }
+                    }
+                    
+                    // If JSON parsing failed or no JSON found, parse as plain text
+                    if (!Array.isArray(newOptions) || newOptions.length === 0) {
+                        // Split by lines and clean up
+                        const lines = response.split('\n')
+                            .map(line => line.trim())
+                            .filter(line => line.length > 0)
+                            .map(line => {
+                                // Remove bullet points, numbers, quotes, brackets
+                                return line.replace(/^[-*•\d+\.)\]\s]+/, '')
+                                          .replace(/^["'\[\]]+|["'\[\]]+$/g, '')
+                                          .trim();
+                            })
+                            .filter(line => line.length > 0 && !line.match(/^(here|options|alternatives|suggestions)/i));
+                        
+                        newOptions = lines.slice(0, 6); // Take first 6 valid options
+                    }
+                    
+                    if (!Array.isArray(newOptions) || newOptions.length === 0) {
+                        throw new Error('No valid options found in response');
+                    }
+
+                    const variableIndex = context.variableIndex;
+                    const variable = currentVariables[variableIndex];
+                    
+                    // Add the new options to the variable
+                    const addedOptions = [];
+                    newOptions.forEach(option => {
+                        const cleanOption = String(option).trim();
+                        if (cleanOption && !variable.options.includes(cleanOption)) {
+                            variable.options.push(cleanOption);
+                            addedOptions.push(cleanOption);
+                        }
+                    });
+                    
+                    // Regenerate the variable controls to show new options
+                    setupVariableControls();
+                    calculateCombinations();
+                    
+                    addToTerminal(`✅ Added ${addedOptions.length} new options to "${variable.name}"`, 'success');
+                    addToTerminal(`📊 New total combinations: ${totalCombinations}`, 'analysis');
+                    addedOptions.forEach(option => {
+                        addToTerminal(`   + ${option}`, 'normal');
+                    });
+                    
+                } catch (error) {
+                    addToTerminal(`❌ Error processing AI expand: ${error.message}`, 'warning');
+                    addToTerminal(`Raw response: ${response.substring(0, 200)}...`, 'warning');
+                }
+                return;
+            }
+        }
+
+        function setupVariableControls() {
+            elements.variableList.innerHTML = '';
+            
+            currentVariables.forEach((variable, index) => {
+                const variableDiv = document.createElement('div');
+                variableDiv.className = 'p-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700';
+                
+                // Ensure original value is always included in options and comes first
+                let allOptions = [];
+                
+                // Add original value first (marked as "Original")
+                if (variable.current_value && variable.current_value.trim()) {
+                    allOptions.push({
+                        value: variable.current_value,
+                        display: `${variable.current_value} (Original)`,
+                        isOriginal: true
+                    });
+                }
+                
+                // Add all other options, but skip if they match the original value
+                variable.options.forEach(option => {
+                    if (option !== variable.current_value) {
+                        allOptions.push({
+                            value: option,
+                            display: option,
+                            isOriginal: false
+                        });
+                    }
+                });
+                
+                variableDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-medium">${variable.name}:</label>
+                        <button 
+                            class="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs transition-colors"
+                            onclick="removeVariable(${index})"
+                            title="Remove this variable"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                    <div class="flex gap-2">
+                        <select 
+                            class="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-600 text-sm" 
+                            data-variable-index="${index}"
+                        >
+                            ${allOptions.map(optionObj => 
+                                `<option value="${optionObj.value}" ${optionObj.isOriginal ? 'selected' : ''}>${optionObj.display}</option>`
+                            ).join('')}
+                        </select>
+                        <button 
+                            class="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm transition-colors"
+                            onclick="showAIExpandDialog(${index})"
+                            title="AI Expand - Generate more options"
+                        >
+                            🤖 AI Expand
+                        </button>
+                    </div>
+                `;
+                
+                const select = variableDiv.querySelector('select');
+                select.addEventListener('change', updateGeneratedPrompt);
+                
+                elements.variableList.appendChild(variableDiv);
+            });
+            
+            elements.variableControls.classList.remove('hidden');
+        }
+
+        function calculateCombinations() {
+            totalCombinations = Math.min(currentVariables.reduce((total, variable) => total * variable.options.length, 1), 10000);
+            currentCombination = 0;
+            updateComboCounter();
+        }
+
+        function updateGeneratedPrompt() {
+            if (currentVariables.length === 0) return;
+
+            let prompt = originalPrompt;
+            
+            // Replace variables in the prompt
+            currentVariables.forEach((variable, index) => {
+                const select = document.querySelector(`[data-variable-index="${index}"]`);
+                const selectedValue = select ? select.value : variable.current_value;
+                
+                // Try multiple replacement patterns
+                const patterns = [
+                    new RegExp(`\\b${escapeRegExp(variable.current_value)}\\b`, 'gi'),
+                    new RegExp(escapeRegExp(variable.current_value), 'gi')
+                ];
+                
+                for (const pattern of patterns) {
+                    if (pattern.test(prompt)) {
+                        prompt = prompt.replace(pattern, selectedValue);
+                        break;
+                    }
+                }
+            });
+
+            // Show updated prompt in terminal
+            addToTerminal(`🔄 Generated prompt: ${prompt}`, 'success');
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function navigateCombination(direction) {
+            if (currentVariables.length === 0) return;
+
+            const newIndex = currentCombination + direction;
+            if (newIndex < 0 || newIndex >= totalCombinations) return;
+
+            currentCombination = newIndex;
+            
+            // Convert linear index to variable selections
+            let remaining = currentCombination;
+            currentVariables.forEach((variable, varIndex) => {
+                const optionIndex = remaining % variable.options.length;
+                remaining = Math.floor(remaining / variable.options.length);
+                
+                const select = document.querySelector(`[data-variable-index="${varIndex}"]`);
+                if (select) {
+                    select.selectedIndex = optionIndex;
+                }
+            });
+
+            updateGeneratedPrompt();
+            updateComboCounter();
+        }
+
+        function updateComboCounter() {
+            elements.comboCounter.textContent = `${currentCombination + 1} / ${totalCombinations}`;
+            elements.prevCombo.disabled = currentCombination === 0;
+            elements.nextCombo.disabled = currentCombination === totalCombinations - 1;
+        }
+
+        function showAnalysisLoading(loading, status = 'Analyzing prompt...') {
+            elements.analysisLoading.classList.toggle('hidden', !loading);
+            if (loading) {
+                elements.analysisStatus.textContent = status;
+            }
+        }
+
+        function clearPrompt() {
+            elements.originalPrompt.value = '';
+            elements.variableControls.classList.add('hidden');
+            currentVariables = [];
+            originalPrompt = '';
+            addToTerminal('🧹 Prompt cleared - ready for new analysis', 'action');
+        }
+
+        // Feed and Repeat functionality
+        function feedPrompt() {
+            const originalText = elements.originalPrompt.value.trim();
+            if (!originalText) {
+                showAlert('Original prompt is empty. Please enter a prompt first.');
+                return;
+            }
+            elements.promptInput.value = originalText;
+        }
+
+        function repeatPrompt() {
+            const currentText = elements.promptInput.value.trim();
+            if (!currentText) {
+                showAlert('Current prompt is empty. Please enter a prompt first.');
+                return;
+            }
+            elements.originalPrompt.value = currentText;
+        }
+
+        // Copy functionality
+        async function copyRotatedPrompt() {
+            const prompt = elements.promptInput.value;
+            if (!prompt) return;
+
+            try {
+                await navigator.clipboard.writeText(prompt);
+                
+                // Visual feedback
+                const originalText = elements.copyRotatedPrompt.textContent;
+                elements.copyRotatedPrompt.textContent = '✓';
+                elements.copyRotatedPrompt.classList.add('bg-green-700');
+                
+                setTimeout(() => {
+                    elements.copyRotatedPrompt.textContent = originalText;
+                    elements.copyRotatedPrompt.classList.remove('bg-green-700');
+                }, 1500);
+            } catch (error) {
+                console.error('Copy failed:', error);
+            }
+        }
+
+        async function copyOriginalPrompt() {
+            const text = elements.originalPrompt.value.trim();
+            if (!text) return;
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                
+                const btn = document.getElementById('copyOriginalPrompt');
+                const originalText = btn.textContent;
+                btn.textContent = '✓';
+                btn.classList.add('bg-green-600');
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('bg-green-600');
+                }, 1500);
+            } catch (error) {
+                console.error('Copy failed:', error);
+            }
+        }
+
+        async function copyImagePrompt() {
+            const text = elements.promptInput.value.trim();
+            if (!text) return;
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                
+                const btn = document.getElementById('copyImagePrompt');
+                const originalText = btn.textContent;
+                btn.textContent = '✓';
+                btn.classList.add('bg-green-600');
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('bg-green-600');
+                }, 1500);
+            } catch (error) {
+                console.error('Copy failed:', error);
+            }
+        }
+
+        // Copy entire flow functionality - PRESERVED AS REQUESTED
+        async function copyEntireFlow() {
+            const originalPromptText = elements.originalPrompt.value.trim();
+            const currentPromptText = elements.promptInput.value.trim();
+            
+            let flowData = `=== AI Prompt Rotator & Variable Analysis System Flow ===\n\n`;
+            
+            if (originalPromptText) {
+                flowData += `ORIGINAL PROMPT:\n${originalPromptText}\n\n`;
+            }
+            
+            if (currentPromptText && currentPromptText !== originalPromptText) {
+                flowData += `CURRENT PROMPT:\n${currentPromptText}\n\n`;
+            }
+            
+            if (currentVariables.length > 0) {
+                flowData += `VARIABLES ANALYZED:\n`;
+                currentVariables.forEach((variable, index) => {
+                    const select = document.querySelector(`[data-variable-index="${index}"]`);
+                    const currentSelection = select ? select.value : variable.current_value;
+                    flowData += `- ${variable.name}: ${currentSelection}\n`;
+                    flowData += `  Options: ${variable.options.join(', ')}\n`;
+                });
+                flowData += `\nTotal Combinations: ${totalCombinations}\nCurrent Combination: ${currentCombination + 1}\n\n`;
+            }
+            
+            flowData += `\n=== End of Flow ===`;
+            
+            try {
+                await navigator.clipboard.writeText(flowData);
+                
+                // Visual feedback
+                const originalText = elements.copyEntireFlow.innerHTML;
+                elements.copyEntireFlow.innerHTML = `
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Copied!
+                `;
+                elements.copyEntireFlow.classList.add('bg-green-700');
+                
+                setTimeout(() => {
+                    elements.copyEntireFlow.innerHTML = originalText;
+                    elements.copyEntireFlow.classList.remove('bg-green-700');
+                }, 2000);
+                
+                showAlert('Workflow copied to clipboard!');
+            } catch (error) {
+                showAlert('Failed to copy workflow: ' + error.message);
+            }
+        }
+
+        // Save State functionality - PRESERVED AS REQUESTED
+        async function saveState() {
+            try {
+                // Get current variable selections
+                const variableSelections = {};
+                currentVariables.forEach((variable, index) => {
+                    const select = document.querySelector(`[data-variable-index="${index}"]`);
+                    if (select) {
+                        variableSelections[index] = select.selectedIndex;
+                    }
+                });
+
+                const state = {
+                    version: "1.0",
+                    timestamp: new Date().toISOString(),
+                    originalPrompt: elements.originalPrompt.value.trim(),
+                    variableRules: document.getElementById('variableRules').value.trim(),
+                    analysisModel: elements.analysisModel.value,
+                    currentVariables: currentVariables,
+                    variableSelections: variableSelections,
+                    currentCombination: currentCombination,
+                    totalCombinations: totalCombinations
+                };
+
+                const stateJson = JSON.stringify(state);
+                
+                await navigator.clipboard.writeText(stateJson);
+                
+                // Visual feedback
+                const btn = document.getElementById('saveState');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = `
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    State Saved!
+                `;
+                btn.classList.add('bg-green-700');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('bg-green-700');
+                }, 2000);
+                
+                showAlert('Complete app state saved to clipboard! Paste this to restore your exact setup later.');
+            } catch (error) {
+                showAlert('Failed to save state: ' + error.message);
+            }
+        }
+
+        // Import State functionality
+        async function importState() {
+            // Check if there's existing state to warn about
+            const hasExistingState = currentVariables.length > 0 || elements.originalPrompt.value.trim();
+            
+            if (hasExistingState) {
+                // Show confirmation first
+                const confirmModal = document.createElement('div');
+                confirmModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                confirmModal.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">⚠️ Import State</h3>
+                        <p class="text-gray-700 dark:text-gray-300 mb-4">This will replace your current work. Are you sure you want to continue?</p>
+                        <div class="flex justify-end gap-3">
+                            <button 
+                                class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                onclick="this.closest('.fixed').remove()"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                class="px-4 py-2 bg-orange-600 text-white hover:bg-orange-700 rounded transition-colors"
+                                onclick="this.closest('.fixed').remove(); showImportDialog()"
+                            >
+                                Continue
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(confirmModal);
+            } else {
+                showImportDialog();
+            }
+        }
+
+        function showImportDialog() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-lg w-full mx-4">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Import Saved State</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Paste your saved state JSON here to restore your exact setup:</p>
+                    <textarea 
+                        id="stateInput"
+                        class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm resize-none"
+                        rows="8"
+                        placeholder="Paste your saved state JSON here..."
+                    ></textarea>
+                    <div class="flex justify-end gap-3 mt-4">
+                        <button 
+                            class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                            onclick="this.closest('.fixed').remove()"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            class="px-4 py-2 bg-cyan-600 text-white hover:bg-cyan-700 rounded transition-colors"
+                            onclick="processImportState()"
+                        >
+                            Import State
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Focus the textarea and select any pasted content
+            setTimeout(() => {
+                const textarea = document.getElementById('stateInput');
+                textarea.focus();
+            }, 100);
+        }
+
+        // Make showImportDialog globally available
+        window.showImportDialog = showImportDialog;
+
+        // Process the imported state
+        function processImportState() {
+            const stateInput = document.getElementById('stateInput').value.trim();
+            
+            if (!stateInput) {
+                showAlert('Please paste your saved state JSON.');
+                return;
+            }
+
+            try {
+                const state = JSON.parse(stateInput);
+                
+                // Validate state structure
+                if (!state.version || !state.originalPrompt) {
+                    throw new Error('Invalid state format');
+                }
+
+                // Restore original prompt and rules
+                elements.originalPrompt.value = state.originalPrompt || '';
+                document.getElementById('variableRules').value = state.variableRules || '';
+                
+                if (state.analysisModel) {
+                    elements.analysisModel.value = state.analysisModel;
+                }
+
+                // Restore variables
+                if (state.currentVariables && Array.isArray(state.currentVariables)) {
+                    currentVariables = state.currentVariables;
+                    originalPrompt = state.originalPrompt;
+                    
+                    if (currentVariables.length > 0) {
+                        setupVariableControls();
+                        
+                        // Restore variable selections
+                        if (state.variableSelections) {
+                            Object.entries(state.variableSelections).forEach(([index, selectedIndex]) => {
+                                const select = document.querySelector(`[data-variable-index="${index}"]`);
+                                if (select && selectedIndex < select.options.length) {
+                                    select.selectedIndex = selectedIndex;
+                                }
+                            });
+                        }
+
+                        // Restore combination state
+                        currentCombination = state.currentCombination || 0;
+                        totalCombinations = state.totalCombinations || 1;
+                        updateComboCounter();
+                        updateGeneratedPrompt();
+                    }
+                }
+
+                // Restore current prompt
+                if (state.currentPrompt) {
+                    elements.promptInput.value = state.currentPrompt;
+                }
+
+                // Close modal
+                document.querySelector('.fixed').remove();
+                
+                showAlert(`State restored successfully! From: ${new Date(state.timestamp).toLocaleString()}`);
+
+            } catch (error) {
+                showAlert('Failed to import state: ' + error.message + '\n\nPlease check that you pasted valid state JSON.');
+            }
+        }
+
+        // Make processImportState globally available
+        window.processImportState = processImportState;
+
+        // Format and Hi-Fi enhancement functions (stubs for now)
+        async function formatPrompt() {
+            const basePrompt = elements.promptInput.value.trim();
+            if (!basePrompt) {
+                showAlert('Please enter a prompt to format.');
+                return;
+            }
+
+            setFormatLoadingState(true);
+            // Placeholder - will be implemented later
+            setTimeout(() => {
+                setFormatLoadingState(false);
+                showAlert('Format functionality will be implemented soon.');
+            }, 1000);
+        }
+
+        async function enhancePromptHiFi() {
+            const prompt = elements.promptInput.value.trim();
+            if (!prompt) {
+                showAlert('Please enter a prompt to enhance.');
+                return;
+            }
+
+            setHiFiLoadingState(true);
+            // Placeholder - will be implemented later
+            setTimeout(() => {
+                setHiFiLoadingState(false);
+                showAlert('Hi-Fi enhancement functionality will be implemented soon.');
+            }, 1000);
+        }
+
+        function setFormatLoadingState(loading) {
+            document.getElementById('formatPromptBtn').disabled = loading;
+            document.getElementById('formatBtnText').classList.toggle('hidden', loading);
+            document.getElementById('formatBtnLoader').classList.toggle('hidden', !loading);
+        }
+
+        function setHiFiLoadingState(loading) {
+            document.getElementById('hifiEnhanceBtn').disabled = loading;
+            document.getElementById('hifiBtnText').classList.toggle('hidden', loading);
+            document.getElementById('hifiBtnLoader').classList.toggle('hidden', !loading);
+        }
+
+        // Placeholder functions for variable management
+        function removeVariable(index) {
+            if (currentVariables.length <= 1) {
+                showAlert('Cannot remove the last variable. Use "Clear" to remove all variables.');
+                return;
+            }
+            
+            currentVariables.splice(index, 1);
+            setupVariableControls();
+            calculateCombinations();
+            updateGeneratedPrompt();
+        }
+
+        function addCustomOption(variableIndex) {
+            addToTerminal(`🔧 Adding custom option to variable: ${currentVariables[variableIndex].name}`, 'action');
+            
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Add Custom Option</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Variable: <strong>${currentVariables[variableIndex].name}</strong></p>
+                    <input 
+                        type="text" 
+                        id="customOptionInput"
+                        class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-base"
+                        placeholder="Enter custom option..."
+                    />
+                    <div class="flex justify-end gap-3 mt-4">
+                        <button 
+                            class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                            onclick="this.closest('.fixed').remove()"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded transition-colors"
+                            onclick="processCustomOption(${variableIndex})"
+                        >
+                            Add Option
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Focus the input
+            setTimeout(() => {
+                const input = document.getElementById('customOptionInput');
+                input.focus();
+                
+                // Add Enter key listener
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        processCustomOption(variableIndex);
+                    }
+                });
+            }, 100);
+        }
+        
+        function processCustomOption(variableIndex) {
+            const input = document.getElementById('customOptionInput');
+            const newOption = input.value.trim();
+            
+            if (!newOption) {
+                showAlert('Please enter a custom option.');
+                return;
+            }
+            
+            // Add the new option to the variable's options array
+            if (!currentVariables[variableIndex].options.includes(newOption)) {
+                currentVariables[variableIndex].options.push(newOption);
+                
+                // Update the specific dropdown instead of regenerating everything
+                const select = document.querySelector(`[data-variable-index="${variableIndex}"]`);
+                const newOptionElement = document.createElement('option');
+                newOptionElement.value = newOption;
+                newOptionElement.textContent = newOption;
+                select.appendChild(newOptionElement);
+                
+                // Recalculate combinations
+                calculateCombinations();
+                
+                addToTerminal(`✅ Added custom option "${newOption}" to ${currentVariables[variableIndex].name}`, 'success');
+                addToTerminal(`📊 New total combinations: ${totalCombinations}`, 'analysis');
+            } else {
+                addToTerminal(`⚠️ Option "${newOption}" already exists for ${currentVariables[variableIndex].name}`, 'warning');
+            }
+            
+            // Close modal
+            document.querySelector('.fixed').remove();
+        }
+        
+        // Make processCustomOption globally available
+        window.processCustomOption = processCustomOption;
+
+        // AI Expand functionality - the original ImgRock feature
+        function showAIExpandDialog(variableIndex) {
+            addToTerminal(`🤖 Initiating AI Expand for variable: ${currentVariables[variableIndex].name}`, 'action');
+            
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-lg w-full mx-4">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">🤖 AI Expand Variable Options</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-2">Variable: <strong>${currentVariables[variableIndex].name}</strong></p>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Current value: <strong>${currentVariables[variableIndex].current_value}</strong></p>
+                    
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Custom Instructions (Optional):
+                    </label>
+                    <textarea 
+                        id="aiExpandInstructions"
+                        class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm resize-none"
+                        rows="3"
+                        placeholder="e.g., 'Focus on modern styles', 'Include only natural elements', 'Keep within fantasy theme'"
+                    ></textarea>
+                    
+                    <div class="flex justify-end gap-3 mt-4">
+                        <button 
+                            class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                            onclick="this.closest('.fixed').remove()"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded transition-colors"
+                            onclick="processAIExpand(${variableIndex})"
+                        >
+                            🚀 Generate 6 New Options
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Focus the textarea
+            setTimeout(() => {
+                document.getElementById('aiExpandInstructions').focus();
+            }, 100);
+        }
+
+        async function processAIExpand(variableIndex) {
+            const instructions = document.getElementById('aiExpandInstructions').value.trim();
+            const variable = currentVariables[variableIndex];
+            
+            // Close modal
+            document.querySelector('.fixed').remove();
+            
+            addToTerminal(`🔄 Generating 6 new options for "${variable.name}"...`, 'action');
+            
+            const customInstructions = instructions ? `\n\nCustom Instructions: ${instructions}` : '';
+            
+            const expandPrompt = `Generate exactly 6 new diverse alternatives for the variable "${variable.name}" with current value "${variable.current_value}".
+
+Context: This is for systematic prompt engineering research. The variable appears in this context: "${originalPrompt}"
+
+Existing options: ${variable.options.join(', ')}
+
+Requirements:
+1. Generate exactly 6 NEW alternatives (different from existing options)
+2. Keep alternatives relevant to the variable type and context
+3. Ensure diversity in style, approach, or characteristics
+4. Each option should be a direct replacement for "${variable.current_value}"${customInstructions}
+
+Output format: List each option on a separate line. No numbers, bullets, or additional text.
+
+Example:
+mystical grove
+enchanted woodland
+ancient forest
+twilight jungle
+magical copse
+ethereal timberland`;
+
+            try {
+                const selectedModel = elements.analysisModel.value;
+                await window.Poe.sendUserMessage(`@${selectedModel} ${expandPrompt}`, {
+                    handler: "analysis-handler",
+                    stream: false,
+                    openChat: false,
+                    handlerContext: { type: 'expand', variableIndex: variableIndex }
+                });
+            } catch (error) {
+                addToTerminal(`❌ Error generating options: ${error.message}`, 'warning');
+            }
+        }
+
+        // Make functions globally available
+        window.showAIExpandDialog = showAIExpandDialog;
+        window.processAIExpand = processAIExpand;
+
+        // Main initialization function
+        function initializeApp() {
+            console.log('🚀 Starting app initialization...');
+            
+            // Initialize DOM elements first
+            const elementsReady = initializeElements();
+            if (!elementsReady) {
+                console.error('❌ Failed to initialize elements, retrying in 100ms');
+                setTimeout(initializeApp, 100);
+                return;
+            }
+            
+            // Add event listeners after elements are ready
+            try {
+                // Analysis button
+                elements.analyzeBtn.addEventListener('click', analyzePrompt);
+                document.getElementById('formatPromptBtn').addEventListener('click', formatPrompt);
+                document.getElementById('hifiEnhanceBtn').addEventListener('click', enhancePromptHiFi);
+                
+                // Navigation
+                elements.prevCombo.addEventListener('click', () => navigateCombination(-1));
+                elements.nextCombo.addEventListener('click', () => navigateCombination(1));
+                elements.copyRotatedPrompt.addEventListener('click', copyRotatedPrompt);
+                elements.clearPrompt.addEventListener('click', clearPrompt);
+                
+                // Copy and Feed functionality
+                document.getElementById('feedBtn2').addEventListener('click', feedPrompt);
+                elements.copyEntireFlow.addEventListener('click', copyEntireFlow);
+                document.getElementById('saveState').addEventListener('click', saveState);
+                document.getElementById('importStateBtn').addEventListener('click', importState);
+                document.getElementById('copyOriginalPrompt').addEventListener('click', copyOriginalPrompt);
+                
+                // Terminal functionality
+                document.getElementById('clearTerminal').addEventListener('click', clearTerminal);
+                document.getElementById('museumIntro').addEventListener('click', showMuseumIntro);
+                
+                console.log('✅ Event listeners added successfully');
+                
+            } catch (error) {
+                console.error('❌ Error adding event listeners:', error);
+            }
+            
+            // Focus original prompt
+            if (elements.originalPrompt) {
+                elements.originalPrompt.focus();
+            }
+            
+            console.log('🎉 App initialization complete!');
+        }
+
+        // Start initialization when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+    </script>
+</body>
+</html>
+
+ 
