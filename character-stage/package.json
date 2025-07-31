@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build --mode lib"
+    "build": "vite build",
+    "build:lib": "tsc && vite build --mode lib"
   },
   "dependencies": {
     "@chub-ai/stages-ts": "^0.5.1-alpha",
